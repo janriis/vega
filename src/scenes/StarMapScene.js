@@ -60,19 +60,20 @@ export default class StarMapScene extends Phaser.Scene {
         this.tweens.add({ targets: pulse, scaleX: 1.4, scaleY: 1.4, alpha: 0, duration: 1500, repeat: -1 });
       }
 
-      // Use explicit circle hit area — setInteractive() alone is unreliable for Arc objects
-      const hitRadius = Math.max(radius + 8, 20);
-      const dot = this.add.circle(loc.x, loc.y, radius, color, isCurrent ? 1 : 0.7)
-        .setInteractive(new Phaser.Geom.Circle(0, 0, hitRadius), Phaser.Geom.Circle.Contains);
+      const dot = this.add.circle(loc.x, loc.y, radius, color, isCurrent ? 1 : 0.7);
 
       this.add.text(loc.x, loc.y + radius + 10, loc.name, {
         fontFamily: 'monospace', fontSize: '11px', color: '#aabbcc'
       }).setOrigin(0.5, 0);
 
       if (!isCurrent) {
-        dot.on('pointerover', () => { dot.setAlpha(1); this.input.setDefaultCursor('pointer'); });
-        dot.on('pointerout', () => { dot.setAlpha(0.7); this.input.setDefaultCursor('default'); });
-        dot.on('pointerdown', () => this.travelTo(id, loc));
+        // Use a Zone for hit detection — Zones are the most reliable click target in Phaser
+        const hitSize = Math.max(radius * 2 + 20, 44);
+        const zone = this.add.zone(loc.x, loc.y, hitSize, hitSize)
+          .setInteractive({ useHandCursor: true });
+        zone.on('pointerover', () => dot.setAlpha(1));
+        zone.on('pointerout', () => dot.setAlpha(0.7));
+        zone.on('pointerdown', () => this.travelTo(id, loc));
       }
     });
   }

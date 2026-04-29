@@ -136,7 +136,7 @@ export default class StationScene extends Phaser.Scene {
           backgroundColor: '#0a1a0a', padding: { x: 8, y: 4 }
         }).setInteractive());
         buyBtn.on('pointerdown', () => {
-          executeBuy(itemId, 1, state, this.locations, this.items);
+          executeBuy(itemId, 1, state, this.locations, this.items, this.locationId);
           this.creditsText.setText(`${state.player.credits} cr`);
           this.switchTab(0);
         });
@@ -148,7 +148,7 @@ export default class StationScene extends Phaser.Scene {
           backgroundColor: '#1a0a0a', padding: { x: 8, y: 4 }
         }).setInteractive());
         sellBtn.on('pointerdown', () => {
-          executeSell(itemId, 1, state, this.locations, this.items);
+          executeSell(itemId, 1, state, this.locations, this.items, this.locationId);
           this.creditsText.setText(`${state.player.credits} cr`);
           this.switchTab(0);
         });

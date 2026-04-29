@@ -18,11 +18,12 @@ export function canSell(itemId, locationId, locations) {
   return loc?.buys?.includes(itemId) ?? false;
 }
 
-export function executeBuy(itemId, quantity, state, locations, items) {
-  const price = getPrice(itemId, state.player.location, state.world.day, locations, items);
+export function executeBuy(itemId, quantity, state, locations, items, locationId) {
+  const loc = locationId || state.player.location;
+  if (!canBuy(itemId, loc, locations)) return { success: false, reason: 'Not sold here' };
+  const price = getPrice(itemId, loc, state.world.day, locations, items);
   const total = price * quantity;
   if (state.player.credits < total) return { success: false, reason: 'Insufficient credits' };
-  if (!canBuy(itemId, state.player.location, locations)) return { success: false, reason: 'Not sold here' };
 
   state.player.credits -= total;
   const existing = state.player.ship.cargo.find(c => c.itemId === itemId);
@@ -31,12 +32,13 @@ export function executeBuy(itemId, quantity, state, locations, items) {
   return { success: true };
 }
 
-export function executeSell(itemId, quantity, state, locations, items) {
-  if (!canSell(itemId, state.player.location, locations)) return { success: false, reason: 'Not bought here' };
+export function executeSell(itemId, quantity, state, locations, items, locationId) {
+  const loc = locationId || state.player.location;
+  if (!canSell(itemId, loc, locations)) return { success: false, reason: 'Not bought here' };
   const cargoSlot = state.player.ship.cargo.find(c => c.itemId === itemId);
   if (!cargoSlot || cargoSlot.quantity < quantity) return { success: false, reason: 'Insufficient cargo' };
 
-  const price = getPrice(itemId, state.player.location, state.world.day, locations, items);
+  const price = getPrice(itemId, loc, state.world.day, locations, items);
   state.player.credits += price * quantity;
   cargoSlot.quantity -= quantity;
   if (cargoSlot.quantity === 0) state.player.ship.cargo = state.player.ship.cargo.filter(c => c.itemId !== itemId);
