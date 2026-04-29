@@ -50,6 +50,16 @@ const GameState = {
 
   reset() {
     this.state = DEFAULT_STATE();
+  },
+
+  checkChapterAdvance() {
+    const flags = this.state.story.flags;
+    if (this.state.story.chapter === 1 && flags.met_mira && flags.intel_echo_01_done) {
+      this.state.story.chapter = 2;
+    }
+    if (this.state.story.chapter === 2 && flags.conspiracy_revealed) {
+      this.state.story.chapter = 3;
+    }
   }
 };
 

@@ -128,6 +128,7 @@ export default class DialogueScene extends Phaser.Scene {
   }
 
   endDialogue() {
+    GameState.checkChapterAdvance();
     GameState.save();
     this.scene.stop('DialogueScene');
   }
