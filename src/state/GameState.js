@@ -1,3 +1,13 @@
+function localStorageAvailable() {
+  try {
+    localStorage.setItem('__test__', '1');
+    localStorage.removeItem('__test__');
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 const DEFAULT_STATE = () => ({
   player: {
     credits: 1000,
@@ -28,10 +38,14 @@ const GameState = {
   state: DEFAULT_STATE(),
 
   save() {
+    if (!localStorageAvailable()) {
+      console.warn('Save skipped — localStorage unavailable');
+      return;
+    }
     try {
       localStorage.setItem(SAVE_KEY, JSON.stringify(this.state));
     } catch (e) {
-      console.warn('Save failed — localStorage unavailable:', e);
+      console.warn('Save failed:', e);
     }
   },
 
