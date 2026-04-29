@@ -78,13 +78,22 @@ export default class StationScene extends Phaser.Scene {
     });
   }
 
+  // Add a game object to the content container and return it
+  _c(obj) {
+    this.contentContainer.add(obj);
+    return obj;
+  }
+
   switchTab(index) {
     this.activeTab = index;
     this.tabButtons.forEach((btn, i) => {
       btn.setColor(i === index ? '#ffffff' : '#556688');
       btn.setBackgroundColor(i === index ? '#1a1a3a' : '#0a0a18');
     });
-    this.contentContainer?.destroy();
+    if (this.contentContainer) {
+      this.contentContainer.destroy(true);
+      this.contentContainer = null;
+    }
     this.drawTab(index);
   }
 
@@ -103,11 +112,11 @@ export default class StationScene extends Phaser.Scene {
     const loc = this.locationData;
     const allItemIds = [...new Set([...(loc.sells || []), ...(loc.buys || [])])];
 
-    this.add.text(100, 150, 'COMMODITY', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' });
-    this.add.text(500, 150, 'PRICE', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' });
-    this.add.text(640, 150, 'IN CARGO', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' });
-    this.add.text(800, 150, 'BUY', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' });
-    this.add.text(920, 150, 'SELL', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' });
+    this._c(this.add.text(100, 150, 'COMMODITY', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(500, 150, 'PRICE', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(640, 150, 'IN CARGO', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(800, 150, 'BUY', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(920, 150, 'SELL', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
 
     allItemIds.forEach((itemId, i) => {
       const item = this.items[itemId];
@@ -117,15 +126,15 @@ export default class StationScene extends Phaser.Scene {
       const buys = canSell(itemId, this.locationId, this.locations);
       const y = 185 + i * 44;
 
-      this.add.text(100, y, item.name, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' });
-      this.add.text(500, y, `${price} cr`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' });
-      this.add.text(640, y, `${inCargo}`, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' });
+      this._c(this.add.text(100, y, item.name, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' }));
+      this._c(this.add.text(500, y, `${price} cr`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' }));
+      this._c(this.add.text(640, y, `${inCargo}`, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' }));
 
       if (sells && state.player.credits >= price) {
-        const buyBtn = this.add.text(800, y, '[BUY]', {
+        const buyBtn = this._c(this.add.text(800, y, '[BUY]', {
           fontFamily: 'monospace', fontSize: '13px', color: '#44cc44',
           backgroundColor: '#0a1a0a', padding: { x: 8, y: 4 }
-        }).setInteractive({ cursor: 'pointer' });
+        }).setInteractive());
         buyBtn.on('pointerdown', () => {
           executeBuy(itemId, 1, state, this.locations, this.items);
           this.creditsText.setText(`${state.player.credits} cr`);
@@ -134,10 +143,10 @@ export default class StationScene extends Phaser.Scene {
       }
 
       if (buys && inCargo > 0) {
-        const sellBtn = this.add.text(920, y, '[SELL]', {
+        const sellBtn = this._c(this.add.text(920, y, '[SELL]', {
           fontFamily: 'monospace', fontSize: '13px', color: '#cc4444',
           backgroundColor: '#1a0a0a', padding: { x: 8, y: 4 }
-        }).setInteractive({ cursor: 'pointer' });
+        }).setInteractive());
         sellBtn.on('pointerdown', () => {
           executeSell(itemId, 1, state, this.locations, this.items);
           this.creditsText.setText(`${state.player.credits} cr`);
@@ -153,30 +162,30 @@ export default class StationScene extends Phaser.Scene {
     const active = state.world.missions.active.map(id => this.allMissions[id]).filter(Boolean);
 
     if (active.length > 0) {
-      this.add.text(100, 155, 'ACTIVE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' });
+      this._c(this.add.text(100, 155, 'ACTIVE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' }));
       active.forEach((m, i) => {
-        this.add.text(100, 180 + i * 36, `▸ ${m.title}`, { fontFamily: 'monospace', fontSize: '13px', color: '#ccbbaa' });
+        this._c(this.add.text(100, 180 + i * 36, `▸ ${m.title}`, { fontFamily: 'monospace', fontSize: '13px', color: '#ccbbaa' }));
       });
     }
 
     const offsetY = active.length > 0 ? 180 + active.length * 36 + 30 : 155;
-    this.add.text(100, offsetY, 'AVAILABLE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' });
+    this._c(this.add.text(100, offsetY, 'AVAILABLE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' }));
 
     if (available.length === 0) {
-      this.add.text(100, offsetY + 30, 'No missions available here.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' });
+      this._c(this.add.text(100, offsetY + 30, 'No missions available here.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' }));
       return;
     }
 
     available.forEach((m, i) => {
       const y = offsetY + 30 + i * 80;
-      this.add.text(100, y, m.title, { fontFamily: 'monospace', fontSize: '15px', color: '#ffffff', fontStyle: 'bold' });
-      this.add.text(100, y + 20, m.description, { fontFamily: 'monospace', fontSize: '12px', color: '#889aaa', wordWrap: { width: 800 } });
-      this.add.text(100, y + 40, `Reward: ${m.reward} credits`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' });
+      this._c(this.add.text(100, y, m.title, { fontFamily: 'monospace', fontSize: '15px', color: '#ffffff', fontStyle: 'bold' }));
+      this._c(this.add.text(100, y + 20, m.description, { fontFamily: 'monospace', fontSize: '12px', color: '#889aaa', wordWrap: { width: 800 } }));
+      this._c(this.add.text(100, y + 40, `Reward: ${m.reward} credits`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' }));
 
-      const acceptBtn = this.add.text(980, y + 20, '[ACCEPT]', {
+      const acceptBtn = this._c(this.add.text(980, y + 20, '[ACCEPT]', {
         fontFamily: 'monospace', fontSize: '13px', color: '#44bb44',
         backgroundColor: '#0a1a0a', padding: { x: 10, y: 6 }
-      }).setInteractive({ cursor: 'pointer' });
+      }).setInteractive());
       acceptBtn.on('pointerdown', () => {
         if (!state.world.missions.active.includes(m.id)) {
           state.world.missions.active.push(m.id);
@@ -188,28 +197,28 @@ export default class StationScene extends Phaser.Scene {
 
   drawShipyardTab() {
     const state = GameState.state;
-    this.add.text(100, 155, 'SHIP UPGRADES', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' });
-    this.add.text(100, 178, `Current: ${state.player.ship.type.toUpperCase()}  |  Credits: ${state.player.credits}`, {
+    this._c(this.add.text(100, 155, 'SHIP UPGRADES', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' }));
+    this._c(this.add.text(100, 178, `Current: ${state.player.ship.type.toUpperCase()}  |  Credits: ${state.player.credits}`, {
       fontFamily: 'monospace', fontSize: '13px', color: '#557799'
-    });
+    }));
 
     UPGRADES.forEach((upgrade, i) => {
       const y = 220 + i * 80;
       const owned = state.player.ship.upgrades.includes(upgrade.id);
       const canAfford = state.player.credits >= upgrade.cost;
 
-      this.add.text(100, y, upgrade.name, { fontFamily: 'monospace', fontSize: '15px', color: owned ? '#448844' : '#aabbcc', fontStyle: 'bold' });
-      this.add.text(100, y + 22, upgrade.description, { fontFamily: 'monospace', fontSize: '12px', color: '#668899' });
-      this.add.text(100, y + 42, `Cost: ${upgrade.cost} cr`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' });
+      this._c(this.add.text(100, y, upgrade.name, { fontFamily: 'monospace', fontSize: '15px', color: owned ? '#448844' : '#aabbcc', fontStyle: 'bold' }));
+      this._c(this.add.text(100, y + 22, upgrade.description, { fontFamily: 'monospace', fontSize: '12px', color: '#668899' }));
+      this._c(this.add.text(100, y + 42, `Cost: ${upgrade.cost} cr`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' }));
 
       if (owned) {
-        this.add.text(980, y + 20, '[INSTALLED]', { fontFamily: 'monospace', fontSize: '13px', color: '#448844' });
+        this._c(this.add.text(980, y + 20, '[INSTALLED]', { fontFamily: 'monospace', fontSize: '13px', color: '#448844' }));
       } else {
-        const buyBtn = this.add.text(980, y + 20, '[PURCHASE]', {
+        const buyBtn = this._c(this.add.text(980, y + 20, '[PURCHASE]', {
           fontFamily: 'monospace', fontSize: '13px',
           color: canAfford ? '#44cc44' : '#446644',
           backgroundColor: '#0a1a0a', padding: { x: 10, y: 6 }
-        }).setInteractive({ cursor: 'pointer' });
+        }).setInteractive());
         if (canAfford) {
           buyBtn.on('pointerdown', () => {
             state.player.credits -= upgrade.cost;
@@ -226,10 +235,10 @@ export default class StationScene extends Phaser.Scene {
 
   drawBarTab() {
     const characters = this.locationData.characters || [];
-    this.add.text(100, 155, 'BAR', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' });
+    this._c(this.add.text(100, 155, 'BAR', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' }));
 
     if (characters.length === 0) {
-      this.add.text(100, 185, 'Nobody here worth talking to.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' });
+      this._c(this.add.text(100, 185, 'Nobody here worth talking to.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' }));
       return;
     }
 
@@ -243,13 +252,13 @@ export default class StationScene extends Phaser.Scene {
       const name = CHAR_NAMES[charId] || charId;
       const nodeId = this.getOpeningNode(charId);
 
-      this.add.text(100, y, name, { fontFamily: 'monospace', fontSize: '15px', color: '#ccddee', fontStyle: 'bold' });
+      this._c(this.add.text(100, y, name, { fontFamily: 'monospace', fontSize: '15px', color: '#ccddee', fontStyle: 'bold' }));
 
       if (nodeId) {
-        const talkBtn = this.add.text(980, y, '[TALK]', {
+        const talkBtn = this._c(this.add.text(980, y, '[TALK]', {
           fontFamily: 'monospace', fontSize: '13px', color: '#4488ff',
           backgroundColor: '#111133', padding: { x: 10, y: 6 }
-        }).setInteractive({ cursor: 'pointer' });
+        }).setInteractive());
         talkBtn.on('pointerdown', () => {
           this.scene.launch('DialogueScene', { characterId: charId, nodeId, returnScene: 'StationScene' });
           this.scene.pause('StationScene');
