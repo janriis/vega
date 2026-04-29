@@ -62,17 +62,22 @@ export default class StarMapScene extends Phaser.Scene {
 
       const dot = this.add.circle(loc.x, loc.y, radius, color, isCurrent ? 1 : 0.7);
 
-      this.add.text(loc.x, loc.y + radius + 10, loc.name, {
+      const nameLabel = this.add.text(loc.x, loc.y + radius + 10, loc.name, {
         fontFamily: 'monospace', fontSize: '11px', color: '#aabbcc'
       }).setOrigin(0.5, 0);
 
-      if (!isCurrent) {
-        // Use a Zone for hit detection — Zones are the most reliable click target in Phaser
-        const hitSize = Math.max(radius * 2 + 20, 44);
-        const zone = this.add.zone(loc.x, loc.y, hitSize, hitSize)
-          .setInteractive({ useHandCursor: true });
-        zone.on('pointerover', () => dot.setAlpha(1));
-        zone.on('pointerout', () => dot.setAlpha(0.7));
+      const hitSize = Math.max(radius * 2 + 20, 44);
+      const zone = this.add.zone(loc.x, loc.y, hitSize, hitSize)
+        .setInteractive({ useHandCursor: true });
+
+      if (isCurrent && loc.type === 'station') {
+        // Current station: click to dock (re-enter without travel)
+        zone.on('pointerover', () => nameLabel.setText(`[DOCK] ${loc.name}`));
+        zone.on('pointerout', () => nameLabel.setText(loc.name));
+        zone.on('pointerdown', () => this.scene.start('StationScene', { location: id }));
+      } else if (!isCurrent) {
+        zone.on('pointerover', () => { dot.setAlpha(1); nameLabel.setColor('#ffffff'); });
+        zone.on('pointerout', () => { dot.setAlpha(0.7); nameLabel.setColor('#aabbcc'); });
         zone.on('pointerdown', () => this.travelTo(id, loc));
       }
     });
