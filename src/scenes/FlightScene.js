@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import GameState from '../state/GameState.js';
+import { playLaser, playExplosion } from '../systems/AudioSystem.js';
 
 // Pseudo-3D: enemies have a world position (wx, wy, wz) where wz=distance
 // Projected screen position: sx = cx + wx/wz*scale, sy = cy + wy/wz*scale
@@ -214,6 +215,7 @@ export default class FlightScene extends Phaser.Scene {
       age: 0
     };
     this.bullets.push(bullet);
+    playLaser();
   }
 
   updateBullets(dt) {
@@ -262,6 +264,7 @@ export default class FlightScene extends Phaser.Scene {
   }
 
   destroyEnemy(enemy) {
+    playExplosion();
     // Explosion flash
     const flash = this.add.circle(SCREEN_CX, SCREEN_CY, 80, 0xff6600, 0.7);
     this.tweens.add({ targets: flash, alpha: 0, scaleX: 2.5, scaleY: 2.5, duration: 600, onComplete: () => flash.destroy() });
