@@ -23,6 +23,10 @@ export function isMissionComplete(missionId, state, allMissions) {
   if (m.type === 'combat_bounty') {
     return state.story.flags[m.completionFlag + '_kill'] === true;
   }
+  if (m.type === 'station_defense') {
+    const kills = state.story.flags[m.completionFlag + '_kills'] || 0;
+    return kills >= (m.target?.count || 1);
+  }
   return false;
 }
 

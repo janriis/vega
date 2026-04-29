@@ -28,13 +28,39 @@ export default class FlightScene extends Phaser.Scene {
     this.setupControls();
 
     if (this.encounterType === 'pirate_ambush') {
-      this.spawnEnemy('pirate_razor');
+      const named = this.activeNamedBountyHere();
+      if (named) this.spawnEnemy(named.target.shipType, named.target.name);
+      else this.spawnEnemy('pirate_razor');
+    } else if (this.encounterType === 'station_defense') {
+      const def = this.activeDefenseHere();
+      const count = def?.target?.count || 3;
+      const shipType = def?.target?.shipType || 'pirate_razor';
+      for (let i = 0; i < count; i++) this.spawnEnemy(shipType);
     } else if (this.encounterType === 'story_event') {
       this.handleStoryEvent();
     } else {
       // Empty space — show briefly then complete
       this.time.delayedCall(2000, () => this.completeFlight());
     }
+  }
+
+  activeNamedBountyHere() {
+    const allMissions = this.cache.json.get('missions');
+    const loc = GameState.state.player.location;
+    return GameState.state.world.missions.active
+      .map(id => allMissions[id])
+      .find(m => m && m.type === 'combat_bounty'
+        && m.target?.name
+        && m.target?.location === loc
+        && !GameState.state.story.flags[m.completionFlag + '_kill']);
+  }
+
+  activeDefenseHere() {
+    const allMissions = this.cache.json.get('missions');
+    const loc = GameState.state.player.location;
+    return GameState.state.world.missions.active
+      .map(id => allMissions[id])
+      .find(m => m && m.type === 'station_defense' && m.target?.location === loc);
   }
 
   drawStarfield() {
@@ -113,11 +139,12 @@ export default class FlightScene extends Phaser.Scene {
     this.sys.game.canvas.style.cursor = 'none';
   }
 
-  spawnEnemy(shipType) {
+  spawnEnemy(shipType, name = null) {
     const ships = this.cache.json.get('ships');
     const data = ships[shipType];
     const enemy = {
       type: shipType,
+      name,
       data,
       wx: Phaser.Math.FloatBetween(-200, 200),
       wy: Phaser.Math.FloatBetween(-150, 150),
@@ -132,6 +159,7 @@ export default class FlightScene extends Phaser.Scene {
     enemy.gfx = this.createEnemyGfx(enemy);
     enemy.bracket = this.add.graphics();
     this.enemies.push(enemy);
+    if (name && this.targetText) this.targetText.setText(`▶ ${name.toUpperCase()}`);
   }
 
   createEnemyGfx(enemy) {
@@ -170,7 +198,8 @@ export default class FlightScene extends Phaser.Scene {
     this.updateRadar();
     this.drawCrosshair(this.input.x, this.input.y);
 
-    if (this.enemies.length === 0 && this.encounterType === 'pirate_ambush') {
+    if (this.enemies.length === 0
+        && (this.encounterType === 'pirate_ambush' || this.encounterType === 'station_defense')) {
       this.completeFlight();
     }
   }
@@ -294,18 +323,28 @@ export default class FlightScene extends Phaser.Scene {
     GameState.state.player.credits += loot;
     this.showMessage(`PIRATE DESTROYED  +${loot} credits`);
 
-    // Set bounty kill flags for matching active missions
+    // Mission progress: named bounties require the named kill; station defenses count attackers downed at the station.
     const allMissions = this.cache.json.get('missions');
+    const loc = GameState.state.player.location;
     GameState.state.world.missions.active.forEach(missionId => {
       const m = allMissions[missionId];
-      if (m && m.type === 'combat_bounty' && m.target?.shipType === enemy.type) {
+      if (!m) return;
+      if (m.type === 'combat_bounty' && m.target?.shipType === enemy.type) {
+        if (m.target.name && enemy.name !== m.target.name) return;
         GameState.state.story.flags[m.completionFlag + '_kill'] = true;
+      }
+      if (m.type === 'station_defense'
+          && m.target?.location === loc
+          && m.target?.shipType === enemy.type) {
+        const key = m.completionFlag + '_kills';
+        GameState.state.story.flags[key] = (GameState.state.story.flags[key] || 0) + 1;
       }
     });
 
     enemy.gfx.destroy();
     enemy.bracket.destroy();
     this.enemies = this.enemies.filter(e => e !== enemy);
+    if (this.enemies.length === 0 && this.targetText) this.targetText.setText('');
   }
 
   updateEnemies(dt, delta) {

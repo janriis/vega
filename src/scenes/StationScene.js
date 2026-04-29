@@ -29,9 +29,10 @@ export default class StationScene extends Phaser.Scene {
 
     this.drawBackground();
     this.drawHeader();
+    // Auto-complete missions BEFORE drawing tabs so cargo/missions/credits all reflect the new state
+    this.checkMissionCompletions();
     this.drawTabs();
     this.drawTab(this.activeTab);
-    this.checkMissionCompletions();
   }
 
   drawBackground() {
@@ -51,17 +52,42 @@ export default class StationScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '12px', color: '#557799'
     }).setOrigin(0, 0.5);
 
-    this.creditsText = this.add.text(1160, 40, `${GameState.state.player.credits} cr`, {
+    this.creditsText = this.add.text(1020, 40, `${GameState.state.player.credits} cr`, {
       fontFamily: 'monospace', fontSize: '16px', color: '#ffcc44'
     }).setOrigin(1, 0.5);
 
-    const leaveBtn = this.add.text(1240, 40, '[LEAVE]', {
+    const launchBtn = this.add.text(1140, 40, '[LAUNCH]', {
+      fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44',
+      backgroundColor: '#332211', padding: { x: 10, y: 6 }
+    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
+    launchBtn.on('pointerdown', () => this.launch());
+    launchBtn.on('pointerover', () => launchBtn.setColor('#ffcc88'));
+    launchBtn.on('pointerout', () => launchBtn.setColor('#ffaa44'));
+
+    const leaveBtn = this.add.text(1240, 40, '[STAR MAP]', {
       fontFamily: 'monospace', fontSize: '13px', color: '#4488ff',
       backgroundColor: '#111133', padding: { x: 10, y: 6 }
     }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
     leaveBtn.on('pointerdown', () => this.scene.start('StarMapScene'));
     leaveBtn.on('pointerover', () => leaveBtn.setColor('#88ccff'));
     leaveBtn.on('pointerout', () => leaveBtn.setColor('#4488ff'));
+  }
+
+  launch() {
+    GameState.state.world.day += 1;
+    GameState.save();
+    const state = GameState.state;
+    // If there's a station-defense mission for this station, the launch becomes the defense.
+    const defense = state.world.missions.active
+      .map(id => this.allMissions[id])
+      .find(m => m && m.type === 'station_defense'
+        && m.target?.location === this.locationId
+        && (state.story.flags[m.completionFlag + '_kills'] || 0) < (m.target?.count || 1));
+    const encounter = defense ? 'station_defense' : (Math.random() < 0.4 ? 'pirate_ambush' : 'empty');
+    this.scene.start('FlightScene', {
+      encounter,
+      afterFlight: { scene: 'StationScene', location: this.locationId }
+    });
   }
 
   drawTabs() {
@@ -403,22 +429,29 @@ export default class StationScene extends Phaser.Scene {
 
   checkMissionCompletions() {
     const state = GameState.state;
+    let completedCount = 0;
     // Use a copy to avoid mutation during iteration
     const activeCopy = [...state.world.missions.active];
     activeCopy.forEach(missionId => {
       if (isMissionComplete(missionId, state, this.allMissions)) {
         const m = this.allMissions[missionId];
         completeMission(missionId, state, this.allMissions);
-        this.showCompletionNotice(m);
+        this.showCompletionNotice(m, completedCount);
+        completedCount += 1;
       }
     });
+    if (completedCount > 0) {
+      if (this.creditsText) this.creditsText.setText(`${state.player.credits} cr`);
+      GameState.save();
+    }
   }
 
-  showCompletionNotice(mission) {
-    const panel = this.add.rectangle(640, 360, 500, 120, 0x0a1a0a, 0.95).setStrokeStyle(1, 0x44cc44);
-    const title = this.add.text(640, 335, 'MISSION COMPLETE', { fontFamily: 'monospace', fontSize: '18px', color: '#44cc44', fontStyle: 'bold' }).setOrigin(0.5);
-    const name = this.add.text(640, 365, mission.title, { fontFamily: 'monospace', fontSize: '14px', color: '#ccddee' }).setOrigin(0.5);
-    const reward = this.add.text(640, 390, `+${mission.reward} credits`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' }).setOrigin(0.5);
+  showCompletionNotice(mission, slot = 0) {
+    const cy = 200 + slot * 140;
+    const panel = this.add.rectangle(640, cy, 500, 120, 0x0a1a0a, 0.95).setStrokeStyle(1, 0x44cc44);
+    const title = this.add.text(640, cy - 25, 'MISSION COMPLETE', { fontFamily: 'monospace', fontSize: '18px', color: '#44cc44', fontStyle: 'bold' }).setOrigin(0.5);
+    const name = this.add.text(640, cy + 5, mission.title, { fontFamily: 'monospace', fontSize: '14px', color: '#ccddee' }).setOrigin(0.5);
+    const reward = this.add.text(640, cy + 30, `+${mission.reward} credits`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' }).setOrigin(0.5);
     this.time.delayedCall(3000, () => { panel.destroy(); title.destroy(); name.destroy(); reward.destroy(); });
   }
 }
