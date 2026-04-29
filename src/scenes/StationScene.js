@@ -156,33 +156,67 @@ export default class StationScene extends Phaser.Scene {
     });
   }
 
-  drawMissionsTab() {
+  drawMissionsTab(selectedMissionId = null) {
     const state = GameState.state;
     const available = getAvailableMissions(this.locationId, state, this.allMissions);
     const active = state.world.missions.active.map(id => this.allMissions[id]).filter(Boolean);
 
+    let y = 155;
+
     if (active.length > 0) {
-      this._c(this.add.text(100, 155, 'ACTIVE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' }));
-      active.forEach((m, i) => {
-        this._c(this.add.text(100, 180 + i * 36, `▸ ${m.title}`, { fontFamily: 'monospace', fontSize: '13px', color: '#ccbbaa' }));
+      this._c(this.add.text(100, y, 'ACTIVE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#ffaa44' }));
+      y += 28;
+
+      active.forEach(m => {
+        const isSelected = m.id === selectedMissionId;
+        const rowBg = this._c(this.add.rectangle(630, y + 10, 1100, 28, isSelected ? 0x1a1a2e : 0x0d0d1a, 0.9));
+        const titleBtn = this._c(this.add.text(120, y, `▸ ${m.title}`, {
+          fontFamily: 'monospace', fontSize: '13px',
+          color: isSelected ? '#ffffff' : '#ccbbaa'
+        }).setInteractive());
+        titleBtn.on('pointerover', () => titleBtn.setColor('#ffffff'));
+        titleBtn.on('pointerout', () => { if (m.id !== selectedMissionId) titleBtn.setColor('#ccbbaa'); });
+        titleBtn.on('pointerdown', () => {
+          // Rebuild the tab with this mission selected/deselected
+          if (this.contentContainer) { this.contentContainer.destroy(true); this.contentContainer = null; }
+          this.contentContainer = this.add.container(0, 0);
+          this.drawMissionsTab(isSelected ? null : m.id);
+        });
+        y += 28;
+
+        if (isSelected) {
+          // Detail panel
+          this._c(this.add.rectangle(630, y + 42, 1100, 90, 0x111122, 0.95).setStrokeStyle(1, 0x334466));
+          this._c(this.add.text(120, y + 8, m.description, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#aabbcc', wordWrap: { width: 900 }
+          }));
+          this._c(this.add.text(120, y + 36, this._missionDestLine(m), {
+            fontFamily: 'monospace', fontSize: '12px', color: '#88aacc'
+          }));
+          this._c(this.add.text(120, y + 56, `Reward: ${m.reward} credits`, {
+            fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44'
+          }));
+          y += 90;
+        }
       });
+      y += 14;
     }
 
-    const offsetY = active.length > 0 ? 180 + active.length * 36 + 30 : 155;
-    this._c(this.add.text(100, offsetY, 'AVAILABLE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' }));
+    this._c(this.add.text(100, y, 'AVAILABLE MISSIONS', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' }));
+    y += 28;
 
     if (available.length === 0) {
-      this._c(this.add.text(100, offsetY + 30, 'No missions available here.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' }));
+      this._c(this.add.text(100, y, 'No missions available here.', { fontFamily: 'monospace', fontSize: '13px', color: '#556677' }));
       return;
     }
 
-    available.forEach((m, i) => {
-      const y = offsetY + 30 + i * 80;
+    available.forEach(m => {
       this._c(this.add.text(100, y, m.title, { fontFamily: 'monospace', fontSize: '15px', color: '#ffffff', fontStyle: 'bold' }));
       this._c(this.add.text(100, y + 20, m.description, { fontFamily: 'monospace', fontSize: '12px', color: '#889aaa', wordWrap: { width: 800 } }));
-      this._c(this.add.text(100, y + 40, `Reward: ${m.reward} credits`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' }));
+      this._c(this.add.text(100, y + 40, this._missionDestLine(m), { fontFamily: 'monospace', fontSize: '12px', color: '#88aacc' }));
+      this._c(this.add.text(100, y + 58, `Reward: ${m.reward} credits`, { fontFamily: 'monospace', fontSize: '12px', color: '#ffcc44' }));
 
-      const acceptBtn = this._c(this.add.text(980, y + 20, '[ACCEPT]', {
+      const acceptBtn = this._c(this.add.text(980, y + 28, '[ACCEPT]', {
         fontFamily: 'monospace', fontSize: '13px', color: '#44bb44',
         backgroundColor: '#0a1a0a', padding: { x: 10, y: 6 }
       }).setInteractive());
@@ -192,7 +226,25 @@ export default class StationScene extends Phaser.Scene {
         }
         this.switchTab(1);
       });
+      y += 80;
     });
+  }
+
+  _missionDestLine(m) {
+    const locations = this.locations;
+    if (m.type === 'cargo_delivery') {
+      const dest = locations[m.cargo?.destination]?.name || m.cargo?.destination || '?';
+      return `Deliver ${m.cargo?.quantity}× ${m.cargo?.itemId} → ${dest}`;
+    }
+    if (m.type === 'intel_courier' || m.type === 'story') {
+      const dest = locations[m.destination]?.name || m.destination || '?';
+      return `Travel to: ${dest}`;
+    }
+    if (m.type === 'combat_bounty') {
+      const dest = locations[m.target?.location]?.name || m.target?.location || '?';
+      return `Destroy ${m.target?.count}× ${m.target?.shipType} near ${dest}`;
+    }
+    return '';
   }
 
   drawShipyardTab() {
