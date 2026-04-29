@@ -1,0 +1,83 @@
+{
+  "bounty_razor_01": {
+    "id": "bounty_razor_01",
+    "title": "Pirate Bounty",
+    "giverLocation": "station_kepler",
+    "type": "combat_bounty",
+    "description": "Destroy the Razor-class pirate harassing the Kepler Belt shipping lane.",
+    "reward": 800,
+    "reputationReward": { "military": 10, "pirates": -5 },
+    "requiresFlag": null,
+    "completionFlag": "bounty_razor_01_done",
+    "target": { "shipType": "pirate_razor", "location": "asteroid_field", "count": 1 }
+  },
+  "delivery_medicine_01": {
+    "id": "delivery_medicine_01",
+    "title": "Medical Supplies",
+    "giverLocation": "station_troy",
+    "type": "cargo_delivery",
+    "description": "Deliver 5 units of Medicine to Fort Kepler. They're running low.",
+    "reward": 600,
+    "reputationReward": { "merchants": 5, "military": 5 },
+    "requiresFlag": null,
+    "completionFlag": "delivery_medicine_01_done",
+    "cargo": { "itemId": "medicine", "quantity": 5, "destination": "station_kepler" }
+  },
+  "intel_echo_01": {
+    "id": "intel_echo_01",
+    "title": "Dead Drop",
+    "giverLocation": "station_troy",
+    "type": "intel_courier",
+    "description": "Mira needs you to pick up a data chip at Nav Point Echo. Don't ask what's on it.",
+    "reward": 1200,
+    "reputationReward": { "merchants": 8 },
+    "requiresFlag": "met_mira",
+    "completionFlag": "intel_echo_01_done",
+    "destination": "nav_point_echo"
+  },
+  "story_conspiracy_01": {
+    "id": "story_conspiracy_01",
+    "title": "Follow the Money",
+    "giverLocation": "station_troy",
+    "type": "story",
+    "description": "Mira has a lead. The Militia's books don't add up — someone's skimming pirate loot.",
+    "reward": 0,
+    "reputationReward": {},
+    "requiresFlag": "intel_echo_01_done",
+    "completionFlag": "conspiracy_revealed",
+    "destination": "station_kepler"
+  },
+  "story_ending_expose": {
+    "id": "story_ending_expose",
+    "title": "Burn It Down",
+    "giverLocation": "station_troy",
+    "type": "story",
+    "description": "Expose the Militia's corruption to the Free Traders. This will have consequences.",
+    "reward": 2000,
+    "reputationReward": { "military": -30, "pirates": 20, "merchants": 30 },
+    "requiresFlag": "conspiracy_revealed",
+    "completionFlag": "ending_expose"
+  },
+  "story_ending_coverup": {
+    "id": "story_ending_coverup",
+    "title": "Bury It",
+    "giverLocation": "station_kepler",
+    "type": "story",
+    "description": "Help Commander Reyes suppress the evidence. The Militia pays well for silence.",
+    "reward": 3000,
+    "reputationReward": { "military": 30, "pirates": -10, "merchants": -15 },
+    "requiresFlag": "conspiracy_revealed",
+    "completionFlag": "ending_coverup"
+  },
+  "story_ending_broker": {
+    "id": "story_ending_broker",
+    "title": "Everyone Pays",
+    "giverLocation": "station_blackrock",
+    "type": "story",
+    "description": "Broker a deal: Militia pays a tithe to the pirates, everyone stays quiet.",
+    "reward": 1500,
+    "reputationReward": { "military": 10, "pirates": 10, "merchants": 5 },
+    "requiresFlag": "conspiracy_revealed",
+    "completionFlag": "ending_broker"
+  }
+}

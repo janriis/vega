@@ -1,0 +1,23 @@
+{
+  "military": {
+    "name": "Vega Militia",
+    "color": "#4488ff",
+    "attackThreshold": -50,
+    "likes": ["bounty_kill", "militia_cargo"],
+    "dislikes": ["contraband_trade", "pirate_side"]
+  },
+  "pirates": {
+    "name": "Blackrock Raiders",
+    "color": "#ff4444",
+    "attackThreshold": 0,
+    "likes": ["contraband_trade", "ignore_pirate"],
+    "dislikes": ["bounty_kill"]
+  },
+  "merchants": {
+    "name": "Free Traders",
+    "color": "#ffaa00",
+    "attackThreshold": -80,
+    "likes": ["trade_run", "deliver_medicine", "deliver_food"],
+    "dislikes": ["combat_near_station"]
+  }
+}

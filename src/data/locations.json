@@ -1,0 +1,53 @@
+{
+  "station_troy": {
+    "name": "Troy Station",
+    "type": "station",
+    "faction": "merchants",
+    "x": 400, "y": 300,
+    "description": "A bustling merchant hub at the system's core.",
+    "buys": ["ore", "food", "fuel"],
+    "sells": ["medicine", "weapons", "food"],
+    "priceModifiers": { "food": 0.9, "medicine": 1.1, "ore": 1.2 },
+    "characters": ["mira_chen", "bartender_troy"]
+  },
+  "station_blackrock": {
+    "name": "Blackrock Outpost",
+    "type": "station",
+    "faction": "pirates",
+    "x": 900, "y": 500,
+    "description": "A rough outpost on the system's edge. Ask no questions.",
+    "buys": ["medicine", "weapons", "contraband"],
+    "sells": ["fuel", "contraband", "ore"],
+    "priceModifiers": { "contraband": 0.7, "medicine": 1.4, "weapons": 0.85 },
+    "characters": ["marcus_vane"]
+  },
+  "station_kepler": {
+    "name": "Fort Kepler",
+    "type": "station",
+    "faction": "military",
+    "x": 200, "y": 550,
+    "description": "Militia headquarters in the Vega system. Keep your papers in order.",
+    "buys": ["food", "medicine", "fuel"],
+    "sells": ["weapons", "fuel", "food"],
+    "priceModifiers": { "weapons": 0.8, "contraband": 0 },
+    "characters": ["commander_reyes", "militia_clerk"]
+  },
+  "asteroid_field": {
+    "name": "Kepler Belt",
+    "type": "asteroid_field",
+    "faction": null,
+    "x": 650, "y": 180,
+    "description": "Dense asteroid field. Rich salvage — high risk.",
+    "encounterRate": 0.9,
+    "characters": []
+  },
+  "nav_point_echo": {
+    "name": "Nav Point Echo",
+    "type": "nav_point",
+    "faction": null,
+    "x": 750, "y": 450,
+    "description": "A derelict navigation beacon. Dead silent.",
+    "encounterRate": 0.2,
+    "characters": []
+  }
+}

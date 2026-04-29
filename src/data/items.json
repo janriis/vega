@@ -1,0 +1,8 @@
+{
+  "food": { "name": "Food Rations", "basePrice": 80, "mass": 1 },
+  "fuel": { "name": "Fuel Cells", "basePrice": 120, "mass": 2 },
+  "medicine": { "name": "Medicine", "basePrice": 200, "mass": 1 },
+  "weapons": { "name": "Weapons", "basePrice": 400, "mass": 3 },
+  "ore": { "name": "Ore", "basePrice": 60, "mass": 4 },
+  "contraband": { "name": "Contraband", "basePrice": 800, "mass": 2 }
+}

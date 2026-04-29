@@ -1,0 +1,29 @@
+{
+  "arrow": {
+    "name": "Arrow Scout",
+    "hullHP": 100,
+    "shieldHP": 80,
+    "speed": 300,
+    "guns": 1,
+    "cargoSlots": 20,
+    "description": "A nimble scout ship favoured by independent traders."
+  },
+  "pirate_razor": {
+    "name": "Razor",
+    "hullHP": 70,
+    "shieldHP": 40,
+    "speed": 350,
+    "guns": 2,
+    "cargoSlots": 0,
+    "description": "Fast and lightly armoured pirate attack ship."
+  },
+  "militia_hawk": {
+    "name": "Hawk",
+    "hullHP": 120,
+    "shieldHP": 100,
+    "speed": 260,
+    "guns": 2,
+    "cargoSlots": 0,
+    "description": "Standard Militia patrol craft."
+  }
+}

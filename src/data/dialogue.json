@@ -1,0 +1,104 @@
+{
+  "mira_chen_first": {
+    "speaker": "mira_chen",
+    "text": "New face. You fly that Arrow in the docking bay? Good. I need someone the Militia doesn't know yet.",
+    "choices": [
+      { "label": "What's the job?", "next": "mira_chen_job" },
+      { "label": "Who are you?", "next": "mira_chen_who" },
+      { "label": "Not interested.", "next": "mira_chen_dismiss" }
+    ],
+    "setFlag": "met_mira"
+  },
+  "mira_chen_job": {
+    "speaker": "mira_chen",
+    "text": "Nothing dangerous. Yet. I need a data chip picked up from Nav Point Echo. Standard courier run. Pays well.",
+    "choices": [
+      { "label": "I'll do it.", "next": "mira_chen_accept", "setMission": "intel_echo_01" },
+      { "label": "What's on the chip?", "next": "mira_chen_chip" }
+    ]
+  },
+  "mira_chen_chip": {
+    "speaker": "mira_chen",
+    "text": "Financial records. Boring stuff, unless you're the person whose name is on them. Pick it up and don't read it.",
+    "choices": [
+      { "label": "Fine. I'll go.", "next": "mira_chen_accept", "setMission": "intel_echo_01" },
+      { "label": "No thanks.", "next": "mira_chen_dismiss" }
+    ]
+  },
+  "mira_chen_accept": {
+    "speaker": "mira_chen",
+    "text": "Smart. Nav Point Echo — you'll see it on your map. And pilot? Watch for Hawks on the way back.",
+    "choices": []
+  },
+  "mira_chen_who": {
+    "speaker": "mira_chen",
+    "text": "Someone who's been in this system long enough to know where the bodies are buried. Figuratively. Mostly.",
+    "choices": [
+      { "label": "What's the job?", "next": "mira_chen_job" },
+      { "label": "I'll pass.", "next": "mira_chen_dismiss" }
+    ]
+  },
+  "mira_chen_dismiss": {
+    "speaker": "mira_chen",
+    "text": "Your loss. Come back when you change your mind.",
+    "choices": []
+  },
+  "mira_chen_conspiracy": {
+    "speaker": "mira_chen",
+    "text": "You read it, didn't you. Those records show Reyes taking a 20% cut of every pirate raid in this system. He's been running both sides.",
+    "choices": [
+      { "label": "What do we do with this?", "next": "mira_conspiracy_options" }
+    ],
+    "requiresFlag": "intel_echo_01_done",
+    "setFlag": "conspiracy_revealed"
+  },
+  "mira_conspiracy_options": {
+    "speaker": "mira_chen",
+    "text": "Three options. Burn him publicly — the traders will love you, the Militia won't. Sell the evidence back to Reyes — he'll pay. Or... broker a deal and make everyone uncomfortable. Your call.",
+    "choices": []
+  },
+  "commander_reyes_first": {
+    "speaker": "commander_reyes",
+    "text": "Pilot. Fort Kepler has work for reliable contractors. Interested in a bounty contract?",
+    "choices": [
+      { "label": "Yes, what do you have?", "next": "reyes_bounty" },
+      { "label": "Not right now.", "next": "reyes_dismiss" }
+    ]
+  },
+  "reyes_bounty": {
+    "speaker": "commander_reyes",
+    "text": "Razor-class pirate working the Kepler Belt. Disrupting supply lanes. 800 credits on proof of kill.",
+    "choices": [
+      { "label": "I'll take it.", "next": "reyes_bounty_accept", "setMission": "bounty_razor_01" },
+      { "label": "Maybe later.", "next": "reyes_dismiss" }
+    ]
+  },
+  "reyes_bounty_accept": {
+    "speaker": "commander_reyes",
+    "text": "Good. Kepler Belt is north of your current position. Don't let it get away.",
+    "choices": []
+  },
+  "reyes_dismiss": {
+    "speaker": "commander_reyes",
+    "text": "Come back when you're ready to work.",
+    "choices": []
+  },
+  "marcus_vane_first": {
+    "speaker": "marcus_vane",
+    "text": "You smell like a trader. Blackrock doesn't get many traders. Sit down. What do you need?",
+    "choices": [
+      { "label": "Just browsing the market.", "next": "marcus_browse" },
+      { "label": "I heard you might have work.", "next": "marcus_work" }
+    ]
+  },
+  "marcus_browse": {
+    "speaker": "marcus_vane",
+    "text": "Market's open. Best prices on fuel in the system. Don't ask where it came from.",
+    "choices": []
+  },
+  "marcus_work": {
+    "speaker": "marcus_vane",
+    "text": "Depends on what kind of work you mean. Come back with a better reputation and we'll talk.",
+    "choices": []
+  }
+}
