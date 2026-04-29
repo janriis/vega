@@ -8,7 +8,7 @@ export function getPrice(itemId, locationId, day, locations, items) {
   return Math.round(item.basePrice * modifier * fluctuation);
 }
 
-export function canBuy(itemId, locationId, playerCredits, locations) {
+export function canBuy(itemId, locationId, locations) {
   const loc = locations[locationId];
   return loc?.sells?.includes(itemId) ?? false;
 }
@@ -22,7 +22,7 @@ export function executeBuy(itemId, quantity, state, locations, items) {
   const price = getPrice(itemId, state.player.location, state.world.day, locations, items);
   const total = price * quantity;
   if (state.player.credits < total) return { success: false, reason: 'Insufficient credits' };
-  if (!canBuy(itemId, state.player.location, state.player.credits, locations)) return { success: false, reason: 'Not sold here' };
+  if (!canBuy(itemId, state.player.location, locations)) return { success: false, reason: 'Not sold here' };
 
   state.player.credits -= total;
   const existing = state.player.ship.cargo.find(c => c.itemId === itemId);

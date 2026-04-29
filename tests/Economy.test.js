@@ -29,11 +29,11 @@ describe('Economy', () => {
   });
 
   it('canBuy returns true when location sells the item and player has credits', () => {
-    expect(canBuy('medicine', 'station_troy', 300, mockLocations)).toBe(true);
+    expect(canBuy('medicine', 'station_troy', mockLocations)).toBe(true);
   });
 
   it('canBuy returns false when location does not sell the item', () => {
-    expect(canBuy('ore', 'station_troy', 300, mockLocations)).toBe(false);
+    expect(canBuy('ore', 'station_troy', mockLocations)).toBe(false);
   });
 
   it('canSell returns true when location buys the item', () => {

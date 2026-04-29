@@ -65,8 +65,8 @@ export default class FlightScene extends Phaser.Scene {
     // HUD panel at bottom
     this.add.rectangle(640, 695, 1280, 50, 0x0a0a18, 0.95);
 
-    this.shieldBar = this.createBar(120, 695, 0x4488ff, ship.shieldHP / 80);
-    this.hullBar = this.createBar(340, 695, 0x44bb44, ship.hullHP / 100);
+    this.shieldBar = this.createBar(120, 695, 0x4488ff, ship.shieldHP / (ship.maxShieldHP || 80));
+    this.hullBar = this.createBar(340, 695, 0x44bb44, ship.hullHP / (ship.maxHullHP || 100));
     this.add.text(60, 695, 'SHLD', { fontFamily: 'monospace', fontSize: '10px', color: '#4488ff' }).setOrigin(0.5);
     this.add.text(278, 695, 'HULL', { fontFamily: 'monospace', fontSize: '10px', color: '#44bb44' }).setOrigin(0.5);
 
@@ -164,7 +164,7 @@ export default class FlightScene extends Phaser.Scene {
   update(time, delta) {
     if (this.flightDone) return;
     const dt = delta / 1000;
-    this.handlePlayerInput(dt);
+    this.handlePlayerInput(dt, delta);
     this.updateEnemies(dt, delta);
     this.updateBullets(dt);
     this.updateStars(dt);
@@ -176,7 +176,7 @@ export default class FlightScene extends Phaser.Scene {
     }
   }
 
-  handlePlayerInput(dt) {
+  handlePlayerInput(dt, delta) {
     const speed = 180;
     if (this.keys.left.isDown)  this.playerVelX -= speed * dt * 3;
     if (this.keys.right.isDown) this.playerVelX += speed * dt * 3;
@@ -327,8 +327,8 @@ export default class FlightScene extends Phaser.Scene {
     const overflow = Math.max(0, damage - ship.shieldHP);
     ship.shieldHP = Math.max(0, ship.shieldHP - damage);
     if (overflow > 0) ship.hullHP = Math.max(0, ship.hullHP - overflow);
-    this.updateBar(this.shieldBar, ship.shieldHP / 80);
-    this.updateBar(this.hullBar, ship.hullHP / 100);
+    this.updateBar(this.shieldBar, ship.shieldHP / (ship.maxShieldHP || 80));
+    this.updateBar(this.hullBar, ship.hullHP / (ship.maxHullHP || 100));
 
     const flash = this.add.rectangle(640, 360, 1280, 720, 0xff0000, 0.15);
     this.tweens.add({ targets: flash, alpha: 0, duration: 200, onComplete: () => flash.destroy() });

@@ -14,7 +14,9 @@ const DEFAULT_STATE = () => ({
     ship: {
       type: 'arrow',
       hullHP: 100,
+      maxHullHP: 100,
       shieldHP: 80,
+      maxShieldHP: 80,
       cargo: [],
       upgrades: []
     },

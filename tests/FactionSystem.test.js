@@ -19,13 +19,13 @@ describe('FactionSystem', () => {
     expect(state.player.reputation.pirates).toBe(100);
   });
 
-  it('pirates do not attack when rep is below threshold', () => {
+  it('pirates attack when rep is below threshold', () => {
     const state = { player: { reputation: { pirates: -20 } } };
-    expect(shouldAttackOnSight('pirates', state, factions)).toBe(false);
+    expect(shouldAttackOnSight('pirates', state, factions)).toBe(true);
   });
 
-  it('pirates attack when rep meets threshold', () => {
+  it('pirates do not attack when rep is above threshold', () => {
     const state = { player: { reputation: { pirates: 5 } } };
-    expect(shouldAttackOnSight('pirates', state, factions)).toBe(true);
+    expect(shouldAttackOnSight('pirates', state, factions)).toBe(false);
   });
 });

@@ -7,5 +7,5 @@ export function shouldAttackOnSight(factionId, state, factions) {
   const faction = factions[factionId];
   if (!faction) return false;
   const rep = state.player.reputation[factionId] ?? 0;
-  return rep >= faction.attackThreshold;
+  return rep <= faction.attackThreshold;
 }

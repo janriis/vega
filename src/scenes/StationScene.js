@@ -5,7 +5,7 @@ import { getAvailableMissions, completeMission, isMissionComplete } from '../sys
 
 const TABS = ['TRADE', 'MISSIONS', 'SHIPYARD', 'BAR'];
 const UPGRADES = [
-  { id: 'shield_booster', name: 'Shield Booster', cost: 1500, description: '+40 max shields', apply: s => { s.ship.shieldHP = Math.min(s.ship.shieldHP + 40, 120); } },
+  { id: 'shield_booster', name: 'Shield Booster', cost: 1500, description: '+40 max shields', apply: s => { s.ship.maxShieldHP = (s.ship.maxShieldHP || 80) + 40; s.ship.shieldHP = Math.min(s.ship.shieldHP + 40, s.ship.maxShieldHP); } },
   { id: 'gun_mk2',        name: 'Gun Mk.2',        cost: 2000, description: '+50% weapon damage', apply: () => {} },
   { id: 'cargo_ext',      name: 'Cargo Expansion', cost: 1000, description: '+10 cargo slots', apply: s => { s.ship.cargoSlots = (s.ship.cargoSlots || 20) + 10; } },
   { id: 'afterburner',    name: 'Afterburner',     cost: 2500, description: '+30% top speed', apply: () => {} }
@@ -113,7 +113,7 @@ export default class StationScene extends Phaser.Scene {
       const item = this.items[itemId];
       const price = getPrice(itemId, this.locationId, state.world.day, this.locations, this.items);
       const inCargo = state.player.ship.cargo.find(c => c.itemId === itemId)?.quantity || 0;
-      const sells = canBuy(itemId, this.locationId, state.player.credits, this.locations);
+      const sells = canBuy(itemId, this.locationId, this.locations);
       const buys = canSell(itemId, this.locationId, this.locations);
       const y = 185 + i * 44;
 
