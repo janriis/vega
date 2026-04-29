@@ -60,16 +60,18 @@ export default class StarMapScene extends Phaser.Scene {
         this.tweens.add({ targets: pulse, scaleX: 1.4, scaleY: 1.4, alpha: 0, duration: 1500, repeat: -1 });
       }
 
+      // Use explicit circle hit area — setInteractive() alone is unreliable for Arc objects
+      const hitRadius = Math.max(radius + 8, 20);
       const dot = this.add.circle(loc.x, loc.y, radius, color, isCurrent ? 1 : 0.7)
-        .setInteractive({ cursor: 'pointer' });
+        .setInteractive(new Phaser.Geom.Circle(0, 0, hitRadius), Phaser.Geom.Circle.Contains);
 
       this.add.text(loc.x, loc.y + radius + 10, loc.name, {
         fontFamily: 'monospace', fontSize: '11px', color: '#aabbcc'
       }).setOrigin(0.5, 0);
 
       if (!isCurrent) {
-        dot.on('pointerover', () => dot.setAlpha(1));
-        dot.on('pointerout', () => dot.setAlpha(0.7));
+        dot.on('pointerover', () => { dot.setAlpha(1); this.input.setDefaultCursor('pointer'); });
+        dot.on('pointerout', () => { dot.setAlpha(0.7); this.input.setDefaultCursor('default'); });
         dot.on('pointerdown', () => this.travelTo(id, loc));
       }
     });
