@@ -105,13 +105,12 @@ export default class FlightScene extends Phaser.Scene {
 
   setupControls() {
     this.keys = this.input.keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
+      boost: Phaser.Input.Keyboard.KeyCodes.W,
       fire: Phaser.Input.Keyboard.KeyCodes.SPACE
     });
     this.fireTimer = 0;
+    // Hide OS cursor — we draw our own crosshair
+    this.sys.game.canvas.style.cursor = 'none';
   }
 
   spawnEnemy(shipType) {
@@ -169,7 +168,7 @@ export default class FlightScene extends Phaser.Scene {
     this.updateBullets(dt);
     this.updateStars(dt);
     this.updateRadar();
-    this.drawCrosshair(SCREEN_CX, SCREEN_CY);
+    this.drawCrosshair(this.input.x, this.input.y);
 
     if (this.enemies.length === 0 && this.encounterType === 'pirate_ambush') {
       this.completeFlight();
@@ -177,18 +176,26 @@ export default class FlightScene extends Phaser.Scene {
   }
 
   handlePlayerInput(dt, delta) {
-    const baseSpeed = 180;
-    const speed = GameState.state.player.ship.upgrades.includes('afterburner') ? baseSpeed * 1.3 : baseSpeed;
-    if (this.keys.left.isDown)  this.playerVelX -= speed * dt * 3;
-    if (this.keys.right.isDown) this.playerVelX += speed * dt * 3;
-    if (this.keys.up.isDown)    this.playerVelY -= speed * dt * 3;
-    if (this.keys.down.isDown)  this.playerVelY += speed * dt * 3;
+    const mouseX = this.input.x;
+    const mouseY = this.input.y;
 
-    // Drag
-    this.playerVelX *= 0.92;
-    this.playerVelY *= 0.92;
-    this.playerVelX = Phaser.Math.Clamp(this.playerVelX, -200, 200);
-    this.playerVelY = Phaser.Math.Clamp(this.playerVelY, -200, 200);
+    // Normalised offset from screen centre (-1 to 1)
+    const rawX = (mouseX - SCREEN_CX) / SCREEN_CX;
+    const rawY = (mouseY - SCREEN_CY) / SCREEN_CY;
+
+    // Small dead zone so resting mouse at centre = no drift
+    const dead = 0.04;
+    const dx = Math.abs(rawX) > dead ? rawX : 0;
+    const dy = Math.abs(rawY) > dead ? rawY : 0;
+
+    // W = boost; afterburner upgrade raises base speed
+    const hasAfterburner = GameState.state.player.ship.upgrades.includes('afterburner');
+    const baseMax = hasAfterburner ? 260 : 200;
+    const maxSpeed = this.keys.boost.isDown ? baseMax * 1.5 : baseMax;
+
+    // Mouse offset directly sets velocity (no inertia — responsive steering)
+    this.playerVelX = dx * maxSpeed;
+    this.playerVelY = dy * maxSpeed;
 
     // Move all world objects opposite to player velocity
     this.enemies.forEach(e => {
@@ -200,18 +207,25 @@ export default class FlightScene extends Phaser.Scene {
       b.wy -= this.playerVelY * dt;
     });
 
-    // Shooting
+    // Fire on Space or left mouse button
     this.fireTimer -= delta;
-    if (this.keys.fire.isDown && this.fireTimer <= 0) {
+    const wantsFire = this.keys.fire.isDown || this.input.activePointer.isDown;
+    if (wantsFire && this.fireTimer <= 0) {
       this.fireBullet();
       this.fireTimer = 300;
     }
   }
 
   fireBullet() {
+    const SPEED = 1800;
+    const mx = this.input.x;
+    const my = this.input.y;
+    // Lateral velocity so the bullet tracks toward the crosshair at all depths
     const bullet = {
       wx: 0, wy: 0, wz: 50,
-      velZ: 1800,  // moves away from player into the scene (increasing wz toward enemy range)
+      velX: (mx - SCREEN_CX) / FOV_SCALE * SPEED,
+      velY: (my - SCREEN_CY) / FOV_SCALE * SPEED,
+      velZ: SPEED,
       gfx: this.add.graphics(),
       age: 0
     };
@@ -225,6 +239,8 @@ export default class FlightScene extends Phaser.Scene {
 
   updateBullets(dt) {
     this.bullets = this.bullets.filter(b => {
+      b.wx += (b.velX || 0) * dt;
+      b.wy += (b.velY || 0) * dt;
       b.wz += b.velZ * dt;
       b.age += dt;
 
@@ -352,6 +368,7 @@ export default class FlightScene extends Phaser.Scene {
 
   playerDied() {
     this.flightDone = true;
+    this.sys.game.canvas.style.cursor = 'default';
     this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.8);
     this.add.text(640, 320, 'SHIP DESTROYED', { fontFamily: 'monospace', fontSize: '36px', color: '#ff4444' }).setOrigin(0.5);
     this.add.text(640, 380, 'Loading last save...', { fontFamily: 'monospace', fontSize: '18px', color: '#aaaaaa' }).setOrigin(0.5);
@@ -413,6 +430,7 @@ export default class FlightScene extends Phaser.Scene {
   completeFlight() {
     if (this.flightDone) return;
     this.flightDone = true;
+    this.sys.game.canvas.style.cursor = 'default';
     GameState.save();
     const af = this.afterFlight;
     this.time.delayedCall(500, () => this.scene.start(af.scene, af));
