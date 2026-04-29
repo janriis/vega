@@ -17,7 +17,11 @@ export function isMissionComplete(missionId, state, allMissions) {
     return state.player.location === m.cargo.destination &&
       state.player.ship.cargo.some(c => c.itemId === m.cargo.itemId && c.quantity >= m.cargo.quantity);
   }
-  if (m.type === 'intel_courier' || m.type === 'story') {
+  if (m.type === 'intel_courier') {
+    // Pickup happens when visiting the destination (set by StarMapScene); turn-in is at the next station landing.
+    return state.story.flags[m.completionFlag + '_visited'] === true;
+  }
+  if (m.type === 'story') {
     return state.player.location === m.destination;
   }
   if (m.type === 'combat_bounty') {
