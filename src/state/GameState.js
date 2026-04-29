@@ -8,6 +8,18 @@ function localStorageAvailable() {
   }
 }
 
+function deepMerge(target, source) {
+  const result = { ...target };
+  for (const key of Object.keys(source)) {
+    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+      result[key] = deepMerge(target[key] || {}, source[key]);
+    } else if (!(key in target)) {
+      result[key] = source[key];
+    }
+  }
+  return result;
+}
+
 const DEFAULT_STATE = () => ({
   player: {
     credits: 1000,
@@ -55,7 +67,9 @@ const GameState = {
     try {
       const raw = localStorage.getItem(SAVE_KEY);
       if (!raw) return false;
-      this.state = JSON.parse(raw);
+      const saved = JSON.parse(raw);
+      // Merge saved data with defaults so new fields are never missing
+      this.state = deepMerge(saved, DEFAULT_STATE());
       return true;
     } catch (e) {
       console.warn('Load failed — corrupted save, using defaults:', e);

@@ -177,7 +177,8 @@ export default class FlightScene extends Phaser.Scene {
   }
 
   handlePlayerInput(dt, delta) {
-    const speed = 180;
+    const baseSpeed = 180;
+    const speed = GameState.state.player.ship.upgrades.includes('afterburner') ? baseSpeed * 1.3 : baseSpeed;
     if (this.keys.left.isDown)  this.playerVelX -= speed * dt * 3;
     if (this.keys.right.isDown) this.playerVelX += speed * dt * 3;
     if (this.keys.up.isDown)    this.playerVelY -= speed * dt * 3;
@@ -218,6 +219,10 @@ export default class FlightScene extends Phaser.Scene {
     playLaser();
   }
 
+  get bulletDamage() {
+    return GameState.state.player.ship.upgrades.includes('gun_mk2') ? 37 : 25;
+  }
+
   updateBullets(dt) {
     this.bullets = this.bullets.filter(b => {
       b.wz += b.velZ * dt;
@@ -241,7 +246,7 @@ export default class FlightScene extends Phaser.Scene {
           const dist = Math.sqrt((b.wx - e.wx) ** 2 + (b.wy - e.wy) ** 2);
           const hitRadius = Math.max(20, (FOV_SCALE / e.wz) * 15);
           if (dist < hitRadius && Math.abs(b.wz - e.wz) < 100) {
-            this.hitEnemy(e, 25);
+            this.hitEnemy(e, this.bulletDamage);
             b.wz = -1; // mark for removal
           }
         });
@@ -272,6 +277,15 @@ export default class FlightScene extends Phaser.Scene {
     const loot = Phaser.Math.Between(100, 400);
     GameState.state.player.credits += loot;
     this.showMessage(`PIRATE DESTROYED  +${loot} credits`);
+
+    // Set bounty kill flags for matching active missions
+    const allMissions = this.cache.json.get('missions');
+    GameState.state.world.missions.active.forEach(missionId => {
+      const m = allMissions[missionId];
+      if (m && m.type === 'combat_bounty' && m.target?.shipType === enemy.type) {
+        GameState.state.story.flags[m.completionFlag + '_kill'] = true;
+      }
+    });
 
     enemy.gfx.destroy();
     enemy.bracket.destroy();

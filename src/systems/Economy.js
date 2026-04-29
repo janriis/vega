@@ -25,6 +25,11 @@ export function executeBuy(itemId, quantity, state, locations, items, locationId
   const total = price * quantity;
   if (state.player.credits < total) return { success: false, reason: 'Insufficient credits' };
 
+  // Check cargo capacity
+  const usedSlots = state.player.ship.cargo.reduce((sum, c) => sum + c.quantity, 0);
+  const maxSlots = state.player.ship.cargoSlots || 20;
+  if (usedSlots + quantity > maxSlots) return { success: false, reason: 'Cargo hold full' };
+
   state.player.credits -= total;
   const existing = state.player.ship.cargo.find(c => c.itemId === itemId);
   if (existing) existing.quantity += quantity;

@@ -83,7 +83,7 @@ export default class DialogueScene extends Phaser.Scene {
       const closeBtn = this.add.text(840, 590, '[ CLOSE ]', {
         fontFamily: 'monospace', fontSize: '14px', color: '#4488ff',
         backgroundColor: '#111122', padding: { x: 14, y: 8 }
-      }).setInteractive({ cursor: 'pointer' });
+      }).setInteractive({ useHandCursor: true });
       closeBtn.on('pointerdown', () => this.endDialogue());
       closeBtn.on('pointerover', () => closeBtn.setColor('#88bbff'));
       closeBtn.on('pointerout', () => closeBtn.setColor('#4488ff'));
@@ -93,7 +93,7 @@ export default class DialogueScene extends Phaser.Scene {
         const btn = this.add.text(280, 520 + i * 38, `${i + 1}. ${choice.label}`, {
           fontFamily: 'monospace', fontSize: '14px', color: '#88aacc',
           backgroundColor: '#0d0d20', padding: { x: 12, y: 7 }
-        }).setInteractive({ cursor: 'pointer' });
+        }).setInteractive({ useHandCursor: true });
         btn.on('pointerover', () => btn.setColor('#ffffff'));
         btn.on('pointerout', () => btn.setColor('#88aacc'));
         btn.on('pointerdown', () => this.selectChoice(i));

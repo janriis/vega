@@ -58,7 +58,7 @@ export default class StationScene extends Phaser.Scene {
     const leaveBtn = this.add.text(1240, 40, '[LEAVE]', {
       fontFamily: 'monospace', fontSize: '13px', color: '#4488ff',
       backgroundColor: '#111133', padding: { x: 10, y: 6 }
-    }).setOrigin(1, 0.5).setInteractive({ cursor: 'pointer' });
+    }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
     leaveBtn.on('pointerdown', () => this.scene.start('StarMapScene'));
     leaveBtn.on('pointerover', () => leaveBtn.setColor('#88ccff'));
     leaveBtn.on('pointerout', () => leaveBtn.setColor('#4488ff'));
@@ -72,7 +72,7 @@ export default class StationScene extends Phaser.Scene {
         color: i === this.activeTab ? '#ffffff' : '#556688',
         backgroundColor: i === this.activeTab ? '#1a1a3a' : '#0a0a18',
         padding: { x: 24, y: 10 }
-      }).setOrigin(0.5).setInteractive({ cursor: 'pointer' });
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
       btn.on('pointerdown', () => this.switchTab(i));
       return btn;
     });

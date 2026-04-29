@@ -31,6 +31,18 @@ export function completeMission(missionId, state, allMissions) {
   if (!m) return;
   state.player.credits += m.reward;
   state.story.flags[m.completionFlag] = true;
+
+  // Consume delivered cargo
+  if (m.type === 'cargo_delivery' && m.cargo && state.player.ship?.cargo) {
+    const slot = state.player.ship.cargo.find(c => c.itemId === m.cargo.itemId);
+    if (slot) {
+      slot.quantity -= m.cargo.quantity;
+      if (slot.quantity <= 0) {
+        state.player.ship.cargo = state.player.ship.cargo.filter(c => c.itemId !== m.cargo.itemId);
+      }
+    }
+  }
+
   state.world.missions.active = state.world.missions.active.filter(id => id !== missionId);
   state.world.missions.completed.push(missionId);
   Object.entries(m.reputationReward || {}).forEach(([faction, amount]) => {
