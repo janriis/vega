@@ -3,7 +3,7 @@ import GameState from '../state/GameState.js';
 import { getPrice, canBuy, canSell, executeBuy, executeSell } from '../systems/Economy.js';
 import { getAvailableMissions, completeMission, isMissionComplete } from '../systems/MissionSystem.js';
 
-const TABS = ['TRADE', 'MISSIONS', 'SHIPYARD', 'BAR'];
+const TABS = ['TRADE', 'MISSIONS', 'SHIPYARD', 'BAR', 'CARGO'];
 const UPGRADES = [
   { id: 'shield_booster', name: 'Shield Booster', cost: 1500, description: '+40 max shields', apply: s => { s.ship.maxShieldHP = (s.ship.maxShieldHP || 80) + 40; s.ship.shieldHP = Math.min(s.ship.shieldHP + 40, s.ship.maxShieldHP); } },
   { id: 'gun_mk2',        name: 'Gun Mk.2',        cost: 2000, description: '+50% weapon damage', apply: () => {} },
@@ -66,7 +66,7 @@ export default class StationScene extends Phaser.Scene {
 
   drawTabs() {
     this.tabButtons = TABS.map((label, i) => {
-      const x = 160 + i * 240;
+      const x = 130 + i * 200;
       const btn = this.add.text(x, 100, label, {
         fontFamily: 'monospace', fontSize: '15px',
         color: i === this.activeTab ? '#ffffff' : '#556688',
@@ -104,6 +104,7 @@ export default class StationScene extends Phaser.Scene {
       case 1: this.drawMissionsTab(); break;
       case 2: this.drawShipyardTab(); break;
       case 3: this.drawBarTab(); break;
+      case 4: this.drawCargoTab(); break;
     }
   }
 
@@ -319,6 +320,67 @@ export default class StationScene extends Phaser.Scene {
             this.switchTab(3);
           });
         });
+      }
+    });
+  }
+
+  drawCargoTab() {
+    const state = GameState.state;
+    const ship = state.player.ship;
+    const cargo = ship.cargo || [];
+    const usedSlots = cargo.reduce((sum, c) => sum + c.quantity, 0);
+    const maxSlots = ship.cargoSlots || 20;
+
+    this._c(this.add.text(100, 155, 'CARGO HOLD', { fontFamily: 'monospace', fontSize: '13px', color: '#4488ff' }));
+    this._c(this.add.text(100, 178, `Used: ${usedSlots} / ${maxSlots} slots`, {
+      fontFamily: 'monospace', fontSize: '13px',
+      color: usedSlots >= maxSlots ? '#ff4444' : '#557799'
+    }));
+
+    // Capacity bar
+    const barW = 400;
+    const fillW = Math.round((usedSlots / maxSlots) * barW);
+    const barColor = usedSlots >= maxSlots ? 0xff4444 : usedSlots > maxSlots * 0.75 ? 0xffaa00 : 0x4488ff;
+    this._c(this.add.rectangle(100 + barW / 2, 200, barW, 8, 0x222233));
+    if (fillW > 0) this._c(this.add.rectangle(100 + fillW / 2, 200, fillW, 6, barColor));
+
+    // Column headers
+    this._c(this.add.text(100, 225, 'ITEM', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(500, 225, 'QTY', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(620, 225, 'EST. VALUE', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+    this._c(this.add.text(800, 225, 'CAN SELL HERE', { fontFamily: 'monospace', fontSize: '12px', color: '#557799' }));
+
+    if (cargo.length === 0) {
+      this._c(this.add.text(100, 265, 'Cargo hold is empty.', {
+        fontFamily: 'monospace', fontSize: '14px', color: '#556677'
+      }));
+      return;
+    }
+
+    cargo.forEach((slot, i) => {
+      const item = this.items[slot.itemId];
+      if (!item) return;
+      const y = 260 + i * 44;
+      const price = getPrice(slot.itemId, this.locationId, state.world.day, this.locations, this.items);
+      const totalValue = price * slot.quantity;
+      const sellable = canSell(slot.itemId, this.locationId, this.locations);
+
+      this._c(this.add.text(100, y, item.name, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' }));
+      this._c(this.add.text(500, y, `${slot.quantity}`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffffff' }));
+      this._c(this.add.text(620, y, `~${totalValue} cr`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' }));
+
+      if (sellable) {
+        const sellBtn = this._c(this.add.text(800, y, '[SELL ALL]', {
+          fontFamily: 'monospace', fontSize: '13px', color: '#cc4444',
+          backgroundColor: '#1a0a0a', padding: { x: 8, y: 4 }
+        }).setInteractive());
+        sellBtn.on('pointerdown', () => {
+          executeSell(slot.itemId, slot.quantity, state, this.locations, this.items, this.locationId);
+          this.creditsText.setText(`${state.player.credits} cr`);
+          this.switchTab(4);
+        });
+      } else {
+        this._c(this.add.text(800, y, 'Not wanted here', { fontFamily: 'monospace', fontSize: '12px', color: '#445566' }));
       }
     });
   }
