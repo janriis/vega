@@ -1,15 +1,27 @@
 {
   "bounty_razor_01": {
     "id": "bounty_razor_01",
-    "title": "Pirate Bounty",
+    "title": "Hunt: Razor Vex",
     "giverLocation": "station_kepler",
     "type": "combat_bounty",
-    "description": "Destroy the Razor-class pirate harassing the Kepler Belt shipping lane.",
+    "description": "Razor Vex commands a Razor-class pirate harassing the Kepler Belt shipping lane. Find them and finish them.",
     "reward": 800,
     "reputationReward": { "military": 10, "pirates": -5 },
     "requiresFlag": null,
     "completionFlag": "bounty_razor_01_done",
-    "target": { "shipType": "pirate_razor", "location": "asteroid_field", "count": 1 }
+    "target": { "shipType": "pirate_razor", "name": "Razor Vex", "location": "asteroid_field", "count": 1 }
+  },
+  "defense_kepler_01": {
+    "id": "defense_kepler_01",
+    "title": "Defend Fort Kepler",
+    "giverLocation": "station_kepler",
+    "type": "station_defense",
+    "description": "Pirate raiders are massing near Fort Kepler. Launch and repel three of them.",
+    "reward": 1200,
+    "reputationReward": { "military": 15, "pirates": -10 },
+    "requiresFlag": null,
+    "completionFlag": "defense_kepler_01_done",
+    "target": { "shipType": "pirate_razor", "location": "station_kepler", "count": 3 }
   },
   "delivery_medicine_01": {
     "id": "delivery_medicine_01",
