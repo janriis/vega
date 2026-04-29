@@ -125,7 +125,7 @@ export default class FlightScene extends Phaser.Scene {
       hullHP: data.hullHP,
       shieldHP: data.shieldHP,
       state: 'approach',  // patrol | approach | attack | flee
-      fireTimer: 0,
+      fireTimer: 1500,
       gfx: null,
       bracket: null
     };
@@ -209,7 +209,7 @@ export default class FlightScene extends Phaser.Scene {
   fireBullet() {
     const bullet = {
       wx: 0, wy: 0, wz: 50,
-      velZ: -1800,  // moves toward z=0 (away from player — into the screen)
+      velZ: 1800,  // moves away from player into the scene (increasing wz toward enemy range)
       gfx: this.add.graphics(),
       age: 0
     };
@@ -221,7 +221,7 @@ export default class FlightScene extends Phaser.Scene {
       b.wz += b.velZ * dt;
       b.age += dt;
 
-      if (b.wz > 2000 || b.wz < 0 || b.age > 2) {
+      if (b.wz > 2000 || b.age > 2) {
         b.gfx.destroy();
         return false;
       }
@@ -250,13 +250,15 @@ export default class FlightScene extends Phaser.Scene {
 
   hitEnemy(enemy, damage) {
     if (enemy.shieldHP > 0) {
+      const overflow = Math.max(0, damage - enemy.shieldHP);
       enemy.shieldHP = Math.max(0, enemy.shieldHP - damage);
+      if (overflow > 0) enemy.hullHP = Math.max(0, enemy.hullHP - overflow);
     } else {
       enemy.hullHP = Math.max(0, enemy.hullHP - damage);
     }
     if (enemy.hullHP <= 0) this.destroyEnemy(enemy);
     else if (enemy.hullHP / enemy.data.hullHP < 0.2) enemy.state = 'flee';
-    else if (enemy.state !== 'flee') enemy.state = 'attack';
+    else if (enemy.state === 'approach') enemy.state = 'attack';
   }
 
   destroyEnemy(enemy) {
@@ -274,6 +276,7 @@ export default class FlightScene extends Phaser.Scene {
   }
 
   updateEnemies(dt, delta) {
+    const toRemove = [];
     this.enemies.forEach(e => {
       switch (e.state) {
         case 'approach':
@@ -281,11 +284,9 @@ export default class FlightScene extends Phaser.Scene {
           if (e.wz < 300) e.state = 'attack';
           break;
         case 'attack':
-          // Circle strafe
           e.wx += Math.sin(this.time.now * 0.001) * 80 * dt;
           e.wy += Math.cos(this.time.now * 0.0013) * 60 * dt;
           e.wz = Phaser.Math.Clamp(e.wz - 30 * dt, 200, 400);
-          // Enemy shoots
           e.fireTimer -= delta;
           if (e.fireTimer <= 0) {
             this.enemyShoot(e);
@@ -297,7 +298,7 @@ export default class FlightScene extends Phaser.Scene {
           if (e.wz > 3000) {
             e.gfx.destroy();
             e.bracket.destroy();
-            this.enemies = this.enemies.filter(en => en !== e);
+            toRemove.push(e);
           }
           break;
       }
@@ -312,12 +313,17 @@ export default class FlightScene extends Phaser.Scene {
         e.bracket.clear();
       }
     });
+    if (toRemove.length > 0) {
+      this.enemies = this.enemies.filter(e => !toRemove.includes(e));
+    }
   }
 
   enemyShoot(enemy) {
     const ship = GameState.state.player.ship;
-    ship.shieldHP = Math.max(0, ship.shieldHP - 15);
-    if (ship.shieldHP === 0) ship.hullHP = Math.max(0, ship.hullHP - 10);
+    const damage = 15;
+    const overflow = Math.max(0, damage - ship.shieldHP);
+    ship.shieldHP = Math.max(0, ship.shieldHP - damage);
+    if (overflow > 0) ship.hullHP = Math.max(0, ship.hullHP - overflow);
     this.updateBar(this.shieldBar, ship.shieldHP / 80);
     this.updateBar(this.hullBar, ship.hullHP / 100);
 
