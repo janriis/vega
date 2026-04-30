@@ -128,10 +128,11 @@ export default class StarMapScene extends Phaser.Scene {
     GameState.save();
 
     if (dest.type === 'station') {
+      const dockArrival = { scene: 'DockingScene', direction: 'arrive', stationId: destId, then: { scene: 'StationScene', location: destId } };
       if (encounter === 'pirate_ambush') {
-        this.scene.start('FlightScene', { encounter: 'pirate_ambush', afterFlight: { scene: 'StationScene', location: destId } });
+        this.scene.start('FlightScene', { encounter: 'pirate_ambush', afterFlight: dockArrival });
       } else {
-        this.scene.start('StationScene', { location: destId });
+        this.scene.start('DockingScene', { direction: 'arrive', stationId: destId, then: { scene: 'StationScene', location: destId } });
       }
     } else {
       this.scene.start('FlightScene', { encounter, location: destId, afterFlight: { scene: 'StarMapScene' } });
