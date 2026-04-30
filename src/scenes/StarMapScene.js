@@ -7,10 +7,30 @@ export default class StarMapScene extends Phaser.Scene {
 
   create() {
     this.locations = this.cache.json.get('locations');
+    this.markIntelPickup();
     this.drawBackground();
     this.drawConnections();
     this.drawLocations();
     this.drawHUD();
+  }
+
+  // If the player is currently at an intel_courier mission's destination, mark it picked up.
+  // This lets the mission auto-complete on the next station landing.
+  markIntelPickup() {
+    const allMissions = this.cache.json.get('missions');
+    const loc = GameState.state.player.location;
+    let dirty = false;
+    GameState.state.world.missions.active.forEach(id => {
+      const m = allMissions[id];
+      if (m && m.type === 'intel_courier' && m.destination === loc) {
+        const key = m.completionFlag + '_visited';
+        if (!GameState.state.story.flags[key]) {
+          GameState.state.story.flags[key] = true;
+          dirty = true;
+        }
+      }
+    });
+    if (dirty) GameState.save();
   }
 
   drawBackground() {
@@ -75,7 +95,12 @@ export default class StarMapScene extends Phaser.Scene {
         zone.on('pointerover', () => nameLabel.setText(`[DOCK] ${loc.name}`));
         zone.on('pointerout', () => nameLabel.setText(loc.name));
         zone.on('pointerdown', () => this.scene.start('StationScene', { location: id }));
-      } else if (!isCurrent) {
+      } else if (isCurrent) {
+        // Current non-station (nav point, asteroid field): click to launch into local flight
+        zone.on('pointerover', () => nameLabel.setText(`[LAUNCH] ${loc.name}`));
+        zone.on('pointerout', () => nameLabel.setText(loc.name));
+        zone.on('pointerdown', () => this.launchAtCurrent(id));
+      } else {
         zone.on('pointerover', () => { dot.setAlpha(1); nameLabel.setColor('#ffffff'); });
         zone.on('pointerout', () => { dot.setAlpha(0.7); nameLabel.setColor('#aabbcc'); });
         zone.on('pointerdown', () => this.travelTo(id, loc));
@@ -111,5 +136,12 @@ export default class StarMapScene extends Phaser.Scene {
     } else {
       this.scene.start('FlightScene', { encounter, location: destId, afterFlight: { scene: 'StarMapScene' } });
     }
+  }
+
+  launchAtCurrent(locId) {
+    GameState.state.world.day += 1;
+    GameState.save();
+    const encounter = rollEncounter(locId, locId, GameState.state.story.flags);
+    this.scene.start('FlightScene', { encounter, location: locId, afterFlight: { scene: 'StarMapScene' } });
   }
 }
