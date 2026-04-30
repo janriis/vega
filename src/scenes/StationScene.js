@@ -151,7 +151,7 @@ export default class StationScene extends Phaser.Scene {
       const inCargo = state.player.ship.cargo.find(c => c.itemId === itemId)?.quantity || 0;
       const sells = canBuy(itemId, this.locationId, this.locations);
       const buys = canSell(itemId, this.locationId, this.locations);
-      const y = 185 + i * 44;
+      const y = 185 + i * 60;
 
       this._c(this.add.text(100, y, item.name, { fontFamily: 'monospace', fontSize: '14px', color: '#aabbcc' }));
       this._c(this.add.text(500, y, `${price} cr`, { fontFamily: 'monospace', fontSize: '14px', color: '#ffcc44' }));
@@ -180,7 +180,35 @@ export default class StationScene extends Phaser.Scene {
           this.switchTab(0);
         });
       }
+
+      const line = this._buyerLine(itemId, price);
+      this._c(this.add.text(100, y + 22, `→ Wanted at: ${line.text}`, {
+        fontFamily: 'monospace', fontSize: '11px', color: line.color
+      }));
     });
+  }
+
+  // Stations (other than this one) that buy `itemId`, with prices, sorted high→low.
+  _buyersFor(itemId) {
+    const state = GameState.state;
+    return Object.entries(this.locations)
+      .filter(([id, loc]) => id !== this.locationId
+        && loc.type === 'station'
+        && (loc.buys || []).includes(itemId))
+      .map(([id, loc]) => ({
+        id, name: loc.name,
+        price: getPrice(itemId, id, state.world.day, this.locations, this.items)
+      }))
+      .sort((a, b) => b.price - a.price);
+  }
+
+  // Build the "Wanted at" line for a row. Greens if any elsewhere price beats `comparePrice`.
+  _buyerLine(itemId, comparePrice) {
+    const buyers = this._buyersFor(itemId);
+    if (buyers.length === 0) return { text: 'no buyers in system', color: '#556677' };
+    const text = buyers.map(b => `${b.name} ${b.price}c`).join('  ·  ');
+    const hasProfit = buyers.some(b => b.price > comparePrice);
+    return { text, color: hasProfit ? '#88dd88' : '#7799aa' };
   }
 
   drawMissionsTab(selectedMissionId = null) {
@@ -386,7 +414,7 @@ export default class StationScene extends Phaser.Scene {
     cargo.forEach((slot, i) => {
       const item = this.items[slot.itemId];
       if (!item) return;
-      const y = 260 + i * 44;
+      const y = 260 + i * 56;
       const price = getPrice(slot.itemId, this.locationId, state.world.day, this.locations, this.items);
       const totalValue = price * slot.quantity;
       const sellable = canSell(slot.itemId, this.locationId, this.locations);
@@ -408,6 +436,11 @@ export default class StationScene extends Phaser.Scene {
       } else {
         this._c(this.add.text(800, y, 'Not wanted here', { fontFamily: 'monospace', fontSize: '12px', color: '#445566' }));
       }
+
+      const line = this._buyerLine(slot.itemId, price);
+      this._c(this.add.text(100, y + 22, `→ Sell at: ${line.text}`, {
+        fontFamily: 'monospace', fontSize: '11px', color: line.color
+      }));
     });
   }
 
