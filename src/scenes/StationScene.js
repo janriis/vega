@@ -68,7 +68,9 @@ export default class StationScene extends Phaser.Scene {
       fontFamily: 'monospace', fontSize: '13px', color: '#4488ff',
       backgroundColor: '#111133', padding: { x: 10, y: 6 }
     }).setOrigin(1, 0.5).setInteractive({ useHandCursor: true });
-    leaveBtn.on('pointerdown', () => this.scene.start('StarMapScene'));
+    leaveBtn.on('pointerdown', () => this.scene.start('DockingScene', {
+      direction: 'depart', stationId: this.locationId, then: { scene: 'StarMapScene' }
+    }));
     leaveBtn.on('pointerover', () => leaveBtn.setColor('#88ccff'));
     leaveBtn.on('pointerout', () => leaveBtn.setColor('#4488ff'));
   }
@@ -84,9 +86,12 @@ export default class StationScene extends Phaser.Scene {
         && m.target?.location === this.locationId
         && (state.story.flags[m.completionFlag + '_kills'] || 0) < (m.target?.count || 1));
     const encounter = defense ? 'station_defense' : (Math.random() < 0.4 ? 'pirate_ambush' : 'empty');
-    this.scene.start('FlightScene', {
-      encounter,
-      afterFlight: { scene: 'StationScene', location: this.locationId }
+    // Depart cinematic → flight → arrive cinematic → station
+    const dockArrival = { scene: 'DockingScene', direction: 'arrive', stationId: this.locationId, then: { scene: 'StationScene', location: this.locationId } };
+    this.scene.start('DockingScene', {
+      direction: 'depart',
+      stationId: this.locationId,
+      then: { scene: 'FlightScene', encounter, afterFlight: dockArrival }
     });
   }
 
