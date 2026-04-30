@@ -67,7 +67,7 @@
   },
   "reyes_bounty": {
     "speaker": "commander_reyes",
-    "text": "Razor-class pirate working the Kepler Belt. Disrupting supply lanes. 800 credits on proof of kill.",
+    "text": "Razor Vex. Pirate captain working the Kepler Belt. Other razors fly with them — but only Vex's head pays. 800 credits on proof of kill.",
     "choices": [
       { "label": "I'll take it.", "next": "reyes_bounty_accept", "setMission": "bounty_razor_01" },
       { "label": "Maybe later.", "next": "reyes_dismiss" }
@@ -75,7 +75,7 @@
   },
   "reyes_bounty_accept": {
     "speaker": "commander_reyes",
-    "text": "Good. Kepler Belt is north of your current position. Don't let it get away.",
+    "text": "Good. Kepler Belt is north of here. Make sure it's Vex you put down — we're not paying for grunts.",
     "choices": []
   },
   "reyes_dismiss": {
